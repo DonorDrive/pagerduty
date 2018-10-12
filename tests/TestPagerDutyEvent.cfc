@@ -3,7 +3,7 @@ component extends = "mxunit.framework.TestCase" {
 	function setup() {
 		try {
 			variables.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient())
-				.setDedupKey("MXUNIT_TEST");
+				.setDedupeKey("MXUNIT_TEST");
 		} catch(Any e) {
 			variables.exception = e;
 		}

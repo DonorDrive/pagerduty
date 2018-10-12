@@ -2,10 +2,9 @@ component accessors = "true" {
 
 	property name = "component" type = "string";
 	property name = "customDetails" type = "struct";
-	property name = "dedupKey" type = "string";
+	property name = "dedupeKey" type = "string";
 	property name = "eventAction" type = "string" setter = "false";
 	property name = "group" type = "string";
-	property name = "integrationKey" type = "string";
 	property name = "severity" type = "string" setter = "false";
 	property name = "source" type = "string";
 	property name = "summary" type = "string";
@@ -16,6 +15,7 @@ component accessors = "true" {
 		variables.pagerDutyClient = arguments.pagerDutyClient;
 
 		variables.customDetails = {};
+		variables.dedupeKey = createUUID();
 		variables.images = [];
 		variables.links = [];
 		variables.timestamp = now();
@@ -84,9 +84,9 @@ component accessors = "true" {
 		}
 
 		local.payload = serializeJSON({
-			"client": variables.pagerDutyClient.getPagerDutyClient(),
-			"client_url": variables.pagerDutyClient.getPagerDutyClientURL(),
-			"dedup_key": getDedupKey(),
+			"client": variables.pagerDutyClient.getAppName(),
+			"client_url": variables.pagerDutyClient.getAppURL(),
+			"dedup_key": getDedupeKey(),
 			"event_action": arguments.eventAction,
 			"images": variables.images,
 			"links": variables.links,
@@ -99,7 +99,7 @@ component accessors = "true" {
 				"summary": getSummary(),
 				"timestamp": dateTimeFormat(getTimestamp(), "yyyy-mm-dd'T'HH:nn:ss.lZ")
 			},
-			"routing_key": variables.pagerDutyClient.getPagerDutyIntegrationKey()
+			"routing_key": variables.pagerDutyClient.getPagerDutyKey()
 		});
 
 		try {

@@ -1,9 +1,9 @@
 interface {
 
-	string function getPagerDutyClient();
+	string function getAppName();
 
-	string function getPagerDutyClientURL();
+	string function getAppURL();
 
-	string function getPagerDutyIntegrationKey();
+	string function getPagerDutyKey();
 
 }
