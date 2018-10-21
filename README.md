@@ -35,9 +35,7 @@ Properties are available via `get*` and `set*`.
 |---|---|
 |`component`|`payload.component`|
 |`customDetails`|`payload.custom_details`|
-|`group`|`payload.group`|
 |`severity` (required)|`payload.severity`|
-|`source` (required)|`payload.source`|
 |`summary` (required)|`payload.summary`|
 |`timestamp`|`payload.timestamp`|
 |`type`|`payload.class`|
@@ -49,6 +47,6 @@ Links may be attached to the event by calling `PagerDutyEvent.addLink()`
 
 Components implementing `IPagerDutyClient` must have the following 3 methods:
 
-- `getAppName()`: Used to set the `client` field in the underlying API call.
-- `getAppURL()`: Sets `client_url`
+- `getAppName()`: Used to set the `group` field in the underlying API call.
+- `getAppURL()`: Sets `source`
 - `getPagerDutyKey()`: Sets `routing_key`

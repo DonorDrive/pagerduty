@@ -5,8 +5,8 @@ component accessors = "true" {
 	property name = "eventAction" type = "string" setter = "false";
 	property name = "severity" type = "string" setter = "false";
 	property name = "summary" type = "string";
-	property name = "type" type = "string";
 	property name = "timestamp" type = "date";
+	property name = "type" type = "string";
 
 	PagerDutyEvent function init(required IPagerDutyClient pagerDutyClient, required string eventKey) {
 		variables.pagerDutyClient = arguments.pagerDutyClient;
