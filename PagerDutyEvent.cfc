@@ -2,20 +2,17 @@ component accessors = "true" {
 
 	property name = "component" type = "string";
 	property name = "customDetails" type = "struct";
-	property name = "dedupeKey" type = "string";
 	property name = "eventAction" type = "string" setter = "false";
-	property name = "group" type = "string";
 	property name = "severity" type = "string" setter = "false";
-	property name = "source" type = "string";
 	property name = "summary" type = "string";
 	property name = "type" type = "string";
 	property name = "timestamp" type = "date";
 
-	PagerDutyEvent function init(required IPagerDutyClient pagerDutyClient) {
+	PagerDutyEvent function init(required IPagerDutyClient pagerDutyClient, required string eventKey) {
 		variables.pagerDutyClient = arguments.pagerDutyClient;
+		variables.eventKey = arguments.eventKey;
 
 		variables.customDetails = {};
-		variables.dedupeKey = createUUID();
 		variables.images = [];
 		variables.links = [];
 		variables.timestamp = now();
@@ -72,10 +69,9 @@ component accessors = "true" {
 
 	private struct function postToPagerDuty(required string eventAction) {
 		if(!structKeyExists(variables, "severity")
-			|| !structKeyExists(variables, "source")
 			|| !structKeyExists(variables, "summary")
 		) {
-			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity, source, and summary must all be set");
+			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity and summary must all be set");
 		} else if(structKeyExists(variables, "httpResult")) {
 			return {
 				statusCode: 500,
@@ -84,19 +80,17 @@ component accessors = "true" {
 		}
 
 		local.payload = serializeJSON({
-			"client": variables.pagerDutyClient.getAppName(),
-			"client_url": variables.pagerDutyClient.getAppURL(),
-			"dedup_key": getDedupeKey(),
+			"dedup_key": left(variables.eventKey, 255),
 			"event_action": arguments.eventAction,
 			"images": variables.images,
 			"links": variables.links,
 			"payload": {
 				"class": getType(),
 				"custom_details": getCustomDetails(),
-				"group": getGroup(),
+				"group": variables.pagerDutyClient.getAppName(),
 				"severity": getSeverity(),
-				"source": getSource(),
-				"summary": getSummary(),
+				"source": variables.pagerDutyClient.getAppURL(),
+				"summary": left(getSummary(), 1024),
 				"timestamp": dateTimeFormat(getTimestamp(), "yyyy-mm-dd'T'HH:nn:ss.lZ")
 			},
 			"routing_key": variables.pagerDutyClient.getPagerDutyKey()

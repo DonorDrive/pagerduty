@@ -2,8 +2,7 @@ component extends = "mxunit.framework.TestCase" {
 
 	function setup() {
 		try {
-			variables.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient())
-				.setDedupeKey("MXUNIT_TEST");
+			variables.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient(), "MXUNIT_TEST");
 		} catch(Any e) {
 			variables.exception = e;
 		}
@@ -15,9 +14,7 @@ component extends = "mxunit.framework.TestCase" {
 		local.result = variables.pagerDutyEvent
 			.setComponent("MXUnit")
 			.setCustomDetails({ "foo": "bar" })
-			.setGroup("coldfusion")
 			.setSeverity("info")
-			.setSource("try.donordrive.com")
 			.setSummary("PagerDuty Test from MX Unit (Trigger)")
 			.setType("test")
 			.trigger();
@@ -31,7 +28,6 @@ component extends = "mxunit.framework.TestCase" {
 			.addImage(src = "https://static.donordrive.com/themes/resources/img/brand/dd-logo-black.svg", href = "https://try.donordrive.com/", alt = "foo")
 			.addLink(href = "https://try.donordrive.com/", text = "test")
 			.setSeverity("info")
-			.setSource("try.donordrive.com")
 			.setSummary("PagerDuty Test from MX Unit (Trigger)")
 			.setType("test")
 			.trigger();
@@ -43,7 +39,6 @@ component extends = "mxunit.framework.TestCase" {
 	function test_2_acknowledge() {
 		local.result = variables.pagerDutyEvent
 			.setSeverity("info")
-			.setSource("try.donordrive.com")
 			.setSummary("PagerDuty Test from MX Unit (Acknowledge)")
 			.acknowledge();
 
@@ -54,7 +49,6 @@ component extends = "mxunit.framework.TestCase" {
 	function test_3_resolve() {
 		local.result = variables.pagerDutyEvent
 			.setSeverity("info")
-			.setSource("try.donordrive.com")
 			.setSummary("PagerDuty Test from MX Unit (Resolve)")
 			.resolve();
 

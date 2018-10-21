@@ -11,7 +11,7 @@ The `pagerduty` package assumes that it will reside in a `lib` directory under t
 The library comprises of a `PagerDutyEvent` component, and an `IPagerDutyClient` interface.
 
 ```
-pde = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient())
+pde = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient(), "MXUNIT_TEST_EVENT")
 	.setComponent("MXUnit")
 	.setCustomDetails({ "foo": "bar" })
 	.setGroup("coldfusion")
@@ -25,6 +25,8 @@ result = pde.trigger();
 
 ### PagerDutyEvent Properties
 
+The constructor takes two arguments: an implementation of `IPagerDutyClient` (see below) and an `eventKey`. The `eventKey` sets the `dedup_key` in the underlying API call.
+
 Reference: https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2
 
 Properties are available via `get*` and `set*`.
@@ -33,11 +35,10 @@ Properties are available via `get*` and `set*`.
 |---|---|
 |`component`|`payload.component`|
 |`customDetails`|`payload.custom_details`|
-|`dedupeKey`|`dedup_key`|
 |`group`|`payload.group`|
-|`severity`|`payload.severity`|
-|`source`|`payload.source`|
-|`summary`|`payload.summary`|
+|`severity` (required)|`payload.severity`|
+|`source` (required)|`payload.source`|
+|`summary` (required)|`payload.summary`|
 |`timestamp`|`payload.timestamp`|
 |`type`|`payload.class`|
 
@@ -48,6 +49,6 @@ Links may be attached to the event by calling `PagerDutyEvent.addLink()`
 
 Components implementing `IPagerDutyClient` must have the following 3 methods:
 
-- `getAppName()`: Used to set the `client` property of the outgoing PagerDutyEvent
-- `getAppURL()`: Used to set the `client_url` property of the outgoing PagerDutyEvent
-- `getPagerDutyKey()`: Used to set the `routing_key` property of the outgoing PagerDutyEvent
+- `getAppName()`: Used to set the `client` field in the underlying API call.
+- `getAppURL()`: Sets `client_url`
+- `getPagerDutyKey()`: Sets `routing_key`
