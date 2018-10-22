@@ -1,8 +1,8 @@
 interface {
 
-	string function getAppName();
+	string function getApplicationName();
 
-	string function getAppURL();
+	string function getApplicationURL();
 
 	string function getPagerDutyKey();
 

@@ -87,9 +87,9 @@ component accessors = "true" {
 			"payload": {
 				"class": getType(),
 				"custom_details": getCustomDetails(),
-				"group": variables.pagerDutyClient.getAppName(),
+				"group": variables.pagerDutyClient.getApplicationName(),
 				"severity": getSeverity(),
-				"source": variables.pagerDutyClient.getAppURL(),
+				"source": variables.pagerDutyClient.getApplicationURL(),
 				"summary": left(getSummary(), 1024),
 				"timestamp": dateTimeFormat(getTimestamp(), "yyyy-mm-dd'T'HH:nn:ss.lZ")
 			},

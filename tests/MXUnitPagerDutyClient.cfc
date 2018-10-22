@@ -1,10 +1,10 @@
 component implements = "lib.pagerduty.IPagerDutyClient" {
 
-	string function getAppName() {
+	string function getApplicationName() {
 		return "DonorDrive MXUnit Test";
 	}
 
-	string function getAppURL() {
+	string function getApplicationURL() {
 		return "https://www.donordrive.com/";
 	}
 

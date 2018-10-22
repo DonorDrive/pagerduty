@@ -47,6 +47,6 @@ Links may be attached to the event by calling `PagerDutyEvent.addLink()`
 
 Components implementing `IPagerDutyClient` must have the following 3 methods:
 
-- `getAppName()`: Used to set the `group` field in the underlying API call.
-- `getAppURL()`: Sets `source`
+- `getApplicationName()`: Used to set the `payload.group` field in the underlying API call.
+- `getApplicationURL()`: Sets `payload.source`
 - `getPagerDutyKey()`: Sets `routing_key`
