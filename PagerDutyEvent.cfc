@@ -4,7 +4,7 @@ component accessors = "true" {
 	property name = "customDetails" type = "struct";
 	property name = "eventAction" type = "string" setter = "false";
 	property name = "severity" type = "string" setter = "false";
-	property name = "summary" type = "string";
+	property name = "summary" type = "string" default = "info";
 	property name = "timestamp" type = "date";
 	property name = "type" type = "string";
 
@@ -68,10 +68,8 @@ component accessors = "true" {
 	}
 
 	private struct function postToPagerDuty(required string eventAction) {
-		if(!structKeyExists(variables, "severity")
-			|| !structKeyExists(variables, "summary")
-		) {
-			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity and summary must all be set");
+		if(!structKeyExists(variables, "severity") || !structKeyExists(variables, "summary")) {
+			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity and summary must be set");
 		} else if(structKeyExists(variables, "httpResult")) {
 			return {
 				statusCode: 500,
