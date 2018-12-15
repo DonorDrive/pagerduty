@@ -22,7 +22,7 @@ pde = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST_EVENT", pagerDuty
 result = pde.trigger();
 ```
 
-Use of the `IPagerDutyClient` interface is optional, and meant to streamline instantiation. Instantiation may also be done by furnishing the properties of `IPagerDutyClient` directly  to the `PagerDutyEvent`:
+Use of the `IPagerDutyClient` interface is optional, and meant to streamline instantiation. Instantiation may also be done by furnishing the properties of `IPagerDutyClient` directly to the `PagerDutyEvent`:
 ```
 pde = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST_EVENT", applicationName = "MXUnit", applicationURL = "https://www.donordrive.com", pagerDutyKey = "[YOUR PAGERDUTY KEY]")
 	set...()
