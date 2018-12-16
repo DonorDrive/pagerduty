@@ -1,30 +1,23 @@
 component accessors = "true" {
 
-	property name = "applicationName" type = "string" setter = "false";
-	property name = "applicationURL" type = "string" setter = "false";
+	property name = "applicationName" type = "string";
+	property name = "applicationURL" type = "string";
 	property name = "component" type = "string";
 	property name = "customDetails" type = "struct";
-	property name = "eventAction" type = "string" setter = "false";
-	property name = "pagerDutyKey" type = "string" setter = "false";
-	property name = "severity" type = "string" setter = "false";
-	property name = "summary" type = "string" default = "info";
+	property name = "pagerDutyKey" type = "string";
+	property name = "severity" type = "string" setter = "false" default = "info";
+	property name = "summary" type = "string";
 	property name = "timeout" type = "numeric" default = "10";
 	property name = "timestamp" type = "date";
 	property name = "type" type = "string";
 
-	PagerDutyEvent function init(required string eventKey, IPagerDutyClient pagerDutyClient, string applicationName, string applicationURL, string pagerDutyKey) {
+	PagerDutyEvent function init(required string eventKey, IPagerDutyClient pagerDutyClient) {
 		variables.eventKey = arguments.eventKey;
 
 		if(structKeyExists(arguments, "pagerDutyClient")) {
-			variables.applicationName = arguments.pagerDutyClient.getApplicationName();
-			variables.applicationURL = arguments.pagerDutyClient.getApplicationURL();
-			variables.pagerDutyKey = arguments.pagerDutyClient.getPagerDutyKey();
-		} else if(structKeyExists(arguments, "applicationName") && structKeyExists(arguments, "applicationURL") && structKeyExists(arguments, "pagerDutyKey")) {
-			variables.applicationName = arguments.applicationName;
-			variables.applicationURL = arguments.applicationURL;
-			variables.pagerDutyKey = arguments.pagerDutyKey;
-		} else {
-			throw(type = "PagerDutyEvent.MissingParameter", message = "IPagerDutyClient or applicationName + applicationURL + pagerDutyKey must be furnished");
+			setApplicationName(arguments.pagerDutyClient.getApplicationName());
+			setApplicationURL(arguments.pagerDutyClient.getApplicationURL());
+			setPagerDutyKey(arguments.pagerDutyClient.getPagerDutyKey());
 		}
 
 		variables.customDetails = {};
@@ -65,8 +58,13 @@ component accessors = "true" {
 	}
 
 	private struct function postToPagerDuty(required string eventAction) {
-		if(!structKeyExists(variables, "severity") || !structKeyExists(variables, "summary")) {
-			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity and summary must be set");
+		if(isNull(getApplicationName())
+				|| isNull(getApplicationURL())
+				|| isNull(getPagerDutyKey())
+			) {
+			throw(type = "PagerDutyEvent.MissingParameter", message = "applicationName + applicationURL + pagerDutyKey must be set");
+		} else if(!structKeyExists(variables, "summary")) {
+			throw(type = "PagerDutyEvent.MissingParameter", message = "Summary must be set");
 		} else if(structKeyExists(variables, "httpResult")) {
 			return {
 				statusCode: 500,
@@ -92,7 +90,7 @@ component accessors = "true" {
 		});
 
 		try {
-			cfhttp(
+ 			cfhttp(
 					method = "POST",
 					result = "variables.httpResult",
 					timeout = getTimeout(),

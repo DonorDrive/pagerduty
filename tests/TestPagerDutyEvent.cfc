@@ -6,38 +6,31 @@ component extends = "mxunit.framework.TestCase" {
 	function setup() {
 		try {
 			variables.pagerDutyClient = new MXUnitPagerDutyClient();
-			variables.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST", pagerDutyClient = variables.pagerDutyClient);
+			variables.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent("MXUNIT_TEST", variables.pagerDutyClient);
 		} catch(Any e) {
 			variables.exception = e;
 		}
 	}
 
-	function test_0_init_alternate() {
-//		debug(variables.exception); return;
-		local.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(
-			eventKey = "MXUNIT_TEST",
-			applicationName = variables.pagerDutyClient.getApplicationName(),
-			applicationURL = variables.pagerDutyClient.getApplicationURL(),
-			pagerDutyKey = variables.pagerDutyClient.getPagerDutyKey()
-		);
-	}
-
-	function test_0_init_invalid() {
-		try {
-			local.pagerDutyEvent = new lib.pagerduty.PagerDutyEvent(
-				eventKey = "MXUNIT_TEST"
-			);
-			fail("should not be here");
-		} catch(Any e) {
-			assertEquals("PagerDutyEvent.MissingParameter", e.type);
-		}
-	}
-
 	function test_1_trigger() {
+//		debug(variables.exception); return;
 		local.result = variables.pagerDutyEvent
 			.setComponent("MXUnit")
 			.setCustomDetails({ "foo": "bar" })
 			.setSeverity("info")
+			.setSummary("PagerDuty Test from MX Unit (Trigger)")
+			.setType("test")
+			.trigger();
+
+		debug(local.result);
+		assertTrue(local.result.statusCode.find("202"));
+	}
+
+	function test_1_trigger_alternate() {
+		local.result = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST")
+			.setApplicationName(variables.pagerDutyClient.getApplicationName())
+			.setApplicationURL(variables.pagerDutyClient.getApplicationURL())
+			.setPagerDutyKey(variables.pagerDutyClient.getPagerDutyKey())
 			.setSummary("PagerDuty Test from MX Unit (Trigger)")
 			.setType("test")
 			.trigger();
