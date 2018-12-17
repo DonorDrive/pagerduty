@@ -8,10 +8,9 @@ PagerDuty is an incedent-aggregation service that consolidates alerts around a s
 The `pagerduty` package assumes that it will reside in a `lib` directory under the web root, or mapped in the consuming application.
 
 ## Usage
-The library comprises of a `PagerDutyEvent` component, and an `IPagerDutyClient` interface.
-
+The library comprises of a `PagerDutyEvent` component, and an `IPagerDutyClient` interface. 
 ```
-pde = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient(), "MXUNIT_TEST_EVENT")
+pde = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST_EVENT", pagerDutyClient = new MXUnitPagerDutyClient())
 	.setComponent("MXUnit")
 	.setCustomDetails({ "foo": "bar" })
 	.setGroup("coldfusion")
@@ -21,6 +20,13 @@ pde = new lib.pagerduty.PagerDutyEvent(new MXUnitPagerDutyClient(), "MXUNIT_TEST
 	.setType("test");
 
 result = pde.trigger();
+```
+
+Use of the `IPagerDutyClient` interface is optional, and meant to streamline instantiation. Instantiation may also be done by furnishing the properties of `IPagerDutyClient` directly to the `PagerDutyEvent`:
+```
+pde = new lib.pagerduty.PagerDutyEvent(eventKey = "MXUNIT_TEST_EVENT", applicationName = "MXUnit", applicationURL = "https://www.donordrive.com", pagerDutyKey = "[YOUR PAGERDUTY KEY]")
+	set...()
+	.trigger();
 ```
 
 ### PagerDutyEvent Properties

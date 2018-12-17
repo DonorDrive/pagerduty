@@ -1,16 +1,24 @@
 component accessors = "true" {
 
+	property name = "applicationName" type = "string";
+	property name = "applicationURL" type = "string";
 	property name = "component" type = "string";
 	property name = "customDetails" type = "struct";
-	property name = "eventAction" type = "string" setter = "false";
-	property name = "severity" type = "string" setter = "false";
-	property name = "summary" type = "string" default = "info";
+	property name = "pagerDutyKey" type = "string";
+	property name = "severity" type = "string" setter = "false" default = "info";
+	property name = "summary" type = "string";
+	property name = "timeout" type = "numeric" default = "10";
 	property name = "timestamp" type = "date";
 	property name = "type" type = "string";
 
-	PagerDutyEvent function init(required IPagerDutyClient pagerDutyClient, required string eventKey) {
-		variables.pagerDutyClient = arguments.pagerDutyClient;
+	PagerDutyEvent function init(required string eventKey, IPagerDutyClient pagerDutyClient) {
 		variables.eventKey = arguments.eventKey;
+
+		if(structKeyExists(arguments, "pagerDutyClient")) {
+			setApplicationName(arguments.pagerDutyClient.getApplicationName());
+			setApplicationURL(arguments.pagerDutyClient.getApplicationURL());
+			setPagerDutyKey(arguments.pagerDutyClient.getPagerDutyKey());
+		}
 
 		variables.customDetails = {};
 		variables.images = [];
@@ -49,6 +57,58 @@ component accessors = "true" {
 		return this;
 	}
 
+	private struct function postToPagerDuty(required string eventAction) {
+		if(isNull(getApplicationName())
+				|| isNull(getApplicationURL())
+				|| isNull(getPagerDutyKey())
+			) {
+			throw(type = "PagerDutyEvent.MissingParameter", message = "applicationName + applicationURL + pagerDutyKey must be set");
+		} else if(!structKeyExists(variables, "summary")) {
+			throw(type = "PagerDutyEvent.MissingParameter", message = "Summary must be set");
+		} else if(structKeyExists(variables, "httpResult")) {
+			return {
+				statusCode: 500,
+				statusText: "This event has already been processed"
+			};
+		}
+
+		local.payload = serializeJSON({
+			"dedup_key": left(variables.eventKey, 255),
+			"event_action": arguments.eventAction,
+			"images": variables.images,
+			"links": variables.links,
+			"payload": {
+				"class": getType(),
+				"custom_details": getCustomDetails(),
+				"group": getApplicationName(),
+				"severity": getSeverity(),
+				"source": getApplicationURL(),
+				"summary": left(getSummary(), 1024),
+				"timestamp": dateTimeFormat(getTimestamp(), "yyyy-mm-dd'T'HH:nn:ss.lZ")
+			},
+			"routing_key": getPagerDutyKey()
+		});
+
+		try {
+ 			cfhttp(
+					method = "POST",
+					result = "variables.httpResult",
+					timeout = getTimeout(),
+					url = "https://events.pagerduty.com/v2/enqueue"
+				) {
+				cfhttpparam(type = "header", name = "Content-Type", value = "application/json");
+				cfhttpparam(type = "body", value = local.payload);
+			};
+		} catch(Any e) {
+			variables.httpResult = {
+				statusCode: 500,
+				statusText: e.message & ":" & e.details
+			};
+		}
+
+		return variables.httpResult;
+	}
+
 	struct function resolve() {
 		return postToPagerDuty("resolve");
 	}
@@ -65,53 +125,6 @@ component accessors = "true" {
 
 	struct function trigger() {
 		return postToPagerDuty("trigger");
-	}
-
-	private struct function postToPagerDuty(required string eventAction) {
-		if(!structKeyExists(variables, "severity") || !structKeyExists(variables, "summary")) {
-			throw(type = "PagerDutyEvent.MissingParameter", message = "Severity and summary must be set");
-		} else if(structKeyExists(variables, "httpResult")) {
-			return {
-				statusCode: 500,
-				statusText: "This event has already been processed"
-			};
-		}
-
-		local.payload = serializeJSON({
-			"dedup_key": left(variables.eventKey, 255),
-			"event_action": arguments.eventAction,
-			"images": variables.images,
-			"links": variables.links,
-			"payload": {
-				"class": getType(),
-				"custom_details": getCustomDetails(),
-				"group": variables.pagerDutyClient.getApplicationName(),
-				"severity": getSeverity(),
-				"source": variables.pagerDutyClient.getApplicationURL(),
-				"summary": left(getSummary(), 1024),
-				"timestamp": dateTimeFormat(getTimestamp(), "yyyy-mm-dd'T'HH:nn:ss.lZ")
-			},
-			"routing_key": variables.pagerDutyClient.getPagerDutyKey()
-		});
-
-		try {
-			cfhttp(
-					method = "POST",
-					result = "variables.httpResult",
-					timeout = "10",
-					url = "https://events.pagerduty.com/v2/enqueue"
-				) {
-				cfhttpparam(type = "header", name = "Content-type", value = "application/json");
-				cfhttpparam(type = "body", value = local.payload);
-			};
-		} catch(Any e) {
-			variables.httpResult = {
-				statusCode: 500,
-				statusText: e.message & ":" & e.details
-			};
-		}
-
-		return variables.httpResult;
 	}
 
 }
